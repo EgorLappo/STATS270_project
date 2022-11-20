@@ -1,6 +1,7 @@
 use color_eyre::Result;
 
 pub mod data;
+pub mod mh;
 
 fn main() -> Result<()>{
     let data = data::load_data()?;
