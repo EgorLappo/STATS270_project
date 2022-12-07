@@ -2,7 +2,7 @@ use csv::Reader;
 use serde::Deserialize;
 use color_eyre::Result;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, Copy)]
 pub struct Row {
     pub group: u8,
     pub x1: f64,

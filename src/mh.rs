@@ -2,11 +2,12 @@ use crate::data::{Data, Row};
 use rand::prelude::*;
 use rand::distributions::Distribution;
 use statrs::distribution::{Uniform, Normal};
+use serde::{Serialize, Deserialize};
 
 static SPROPSD: f64 = 0.1;
 static MEANPROPSD: f64 = 0.5;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Parameters {
     s: f64,
     tau: f64,
@@ -166,7 +167,15 @@ fn pnorm(x:f64, mu: f64, s: f64) -> f64 {
 }
 
 impl Parameters {
-    pub fn summary(ps: Vec<Parameters>) -> String {
+    pub fn save_to_csv(ps: &Vec<Parameters>, filename: &str) {
+        let mut wtr = csv::Writer::from_path(filename).unwrap();
+
+        for p in ps {
+            wtr.serialize(p).unwrap();
+        }
+    }
+
+    pub fn summary(ps: &Vec<Parameters>) -> String {
         // compute mean of each parameter
         let n = ps.len() as f64;
 
@@ -177,7 +186,7 @@ impl Parameters {
         let mut gamma1 = 0.0;
         let mut gamma2 = 0.0;
 
-        for p in &ps {
+        for p in ps {
             s += p.s;
             tau += p.tau;
             mu1 += p.mu1;
@@ -201,7 +210,7 @@ impl Parameters {
         let mut gamma1_vec = Vec::new();
         let mut gamma2_vec = Vec::new();
 
-        for p in &ps {
+        for p in ps {
             s_vec.push(p.s);
             tau_vec.push(p.tau);
             mu1_vec.push(p.mu1);
@@ -233,12 +242,7 @@ impl Parameters {
 
         // format mean and quantiles into a summary to print out
 
-        format!("s: {:.3} [{:.3}, {:.3}]
-                 tau: {:.3} [{:.3}, {:.3}]
-                 mu1: {:.3} [{:.3}, {:.3}]
-                 mu2: {:.3} [{:.3}, {:.3}]
-                 gamma1: {:.3} [{:.3}, {:.3}]
-                 gamma2: {:.3} [{:.3}, {:.3}]", s, s_5, s_95, tau, tau_5, tau_95, mu1, mu1_5, mu1_95, mu2, mu2_5, mu2_95, gamma1, gamma1_5, gamma1_95, gamma2, gamma2_5, gamma2_95)
+        format!("s: {:.3} [{:.3}, {:.3}]\ntau: {:.3} [{:.3}, {:.3}]\nmu1: {:.3} [{:.3}, {:.3}]\nmu2: {:.3} [{:.3}, {:.3}]\ngamma1: {:.3} [{:.3}, {:.3}]\ngamma2: {:.3} [{:.3}, {:.3}]", s, s_5, s_95, tau, tau_5, tau_95, mu1, mu1_5, mu1_95, mu2, mu2_5, mu2_95, gamma1, gamma1_5, gamma1_95, gamma2, gamma2_5, gamma2_95)
 
     }
 }
