@@ -1,52 +1,60 @@
 # STATS 270 Project
 
-## Egor Lappo
+# Egor Lappo
 
-### Metropolis-Hastings 
+In this report, I discuss choices made in implementing sampling approaches and present the results. Then, I discuss how they compare to each other. Lastly, I provide an appendix with calculations. The code is available on Github at [https://github.com/EgorLappo/STATS270_project](https://github.com/EgorLappo/STATS270_project).
+
+## Metropolis-Hastings 
 
 This was the most straightforward approach. I chose the following proposal distributions. For $\tau$, I chose $\text{Uniform}(0,1)$; for $\mu_i$, $\gamma_i$, I chose $N(\mu_i, 0.5)$ and $N(\gamma_i,0.5)$ respectively; for $\sigma^2$ I chose $N(\sigma^2, 0.1)$ constrained to $[0,10]$. These are reasonably efficient in their exploration of the probability space, and I've seen them being used in practice. 
 
-My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output:
+My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output from $8000$ samples with $1000$ burn-in steps:
 
 ```
 MH results:
-s: 0.061 [0.046, 0.073]
-tau: 0.864 [0.758, 0.976]
-mu1: -1.437 [-1.617, -1.282]
-mu2: -0.685 [-0.841, -0.537]
-gamma1: -0.271 [-0.444, -0.108]
-gamma2: 0.343 [0.159, 0.516]
+s: 0.060 [0.048, 0.076]
+tau: 0.872 [0.758, 0.981]
+mu1: -1.430 [-1.603, -1.285]
+mu2: -0.665 [-0.808, -0.533]
+gamma1: -0.268 [-0.427, -0.101]
+gamma2: 0.332 [0.167, 0.494]
 ```
 
-I also produced histograms for posterior distributions of the parameters.
+I also produced histograms for posterior distributions of the parameters, with the posterior mean shown as a red line.
 
-### Hamiltonian Monte-Carlo
+![](mh_histograms.png)
 
-I follow the method defined in lecture (and on Wikipedia) verbatim, by solving the Hamiltonian equations using the leapfrog integrator to generate a proposal. I chose the mass matrix to be the identity matrix. The other two parameters I needed to choose were the number of leapfrog steps $L$, and the time to integrate the trajectory for at each leapfrog step, $\Delta t$. If $\Delta t$ is too big, the algorithm is imprecise, for example, the proposals for $\tau$ would be out of the range $[0,1]$ and they will actualy be accepted often. If $L$ and $\Delta t$ are too small, there would be no benefit to HMC, the behavior would be as if I have MH sampling with proposals from the multivariate normal (leapfrog trajectories are approximately linear at short timescales). 
 
-After fine-tuning, I set $L = 5$, $\Delta t=  0.001$. Of course, in modern algorithms these values are adjusted as the sampling progresses, but since the posterior is not too complex in our case, these parameters work okay.
 
-My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output:
+## Hamiltonian Monte-Carlo
+
+I follow the method defined in lecture (and on Wikipedia) verbatim, by solving the Hamiltonian equations using the leapfrog integrator to generate a proposal. I chose the mass matrix to be the identity matrix. The other two parameters I needed to choose were the number of leapfrog steps $L$, and the time to integrate the trajectory for at each leapfrog step, $\Delta t$. If $\Delta t$ is too big, the algorithm is imprecise, for example, the proposals for $\tau$ would be out of the range $[0,1]$ and they will actualy be accepted often. If $L$ and $\Delta t$ are too small, there would be no benefit to HMC, the behavior would be as if I have MH sampling with proposals from the multivariate normal (leapfrog trajectories are approximately linear at short timescales). The computations related to leapfrog integration are presented in the appendix.
+
+After fine-tuning, I set $L = 3$, $\Delta t=  0.01$. For example, if $\Delta t$ was too small, I observed that the distributions of HMC samples became highly multimodal with samplng concentrated in "unreasonable" ranges (judging by the other three methods). Of course, in modern algorithms these values are adjusted as the sampling progresses, but since the posterior is not too complex in our case, these parameters work okay. 
+
+My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output from $8000$ samples with $1000$ burn-in steps:
 
 ```
 HMC results:
-s: 0.254 [0.089, 0.840]
-tau: 0.881 [0.737, 1.059]
-mu1: -1.088 [-1.483, -0.288]
-mu2: -0.455 [-0.591, -0.258]
-gamma1: -0.279 [-0.418, -0.121]
-gamma2: 0.019 [-0.181, 0.220]
+s: 0.119 [0.068, 0.180]
+tau: 0.877 [0.702, 1.097]
+mu1: -1.426 [-1.661, -1.206]
+mu2: -0.645 [-0.849, -0.451]
+gamma1: -0.269 [-0.534, 0.001]
+gamma2: 0.307 [0.069, 0.519]
 ```
 
-I also produced histograms for posterior distributions of the parameters.
+I also produced histograms for posterior distributions of the parameters, with the posterior mean shown as a red line.
 
-### Importance Sampling
+![](hmc_histograms.png)
+
+## Importance Sampling
 
 In the importance sampling approach is the most free-form, since potentialy I can choose any trial density to generate samples from. However, the variance of samples may be unreasonably high. It may be good to use some information in the data to fine-tune the process. One suggestion was to sample from an "arbitrary" distribution to generate an intermediate posterior, and then sample more from this new distribution.
 
 I, however, used an approach similar to what was described in class. I computed the sample means and variances in the first and second groups to obtain MLE estimates of $\mu_1$, $\mu_2$, $\gamma_1$, $\gamma_2$, and $\sigma^2$. Then, I selected the trial distributions "around" these values. In particular, I sampled $\mu_1$ from $N(-1.5,1.5)$, $\mu_2$ from $N(-0.5,1.5)$, $\gamma_1$ from $N(-0.3,1.5)$, and $\gamma_2$ from $N(0.3,1.5)$. I chose to set large variance here to be sure that I get a good sample even if my selection of the mean is poor. For $\tau$, I sample from $\text{Uniform}(0,1)$, and $\sigma^2$ is sampled from $\text{Exp}(12)$, since it has to be nonnegative.
 
-Using IS, I compute posterior means of each of the parameters. Here is the output:
+Using IS, I compute posterior means of each of the parameters. Here is the output from performing $10,000$ samples:
 
 ```
 importance sampling results:
@@ -58,29 +66,36 @@ gamma1: -0.1865337808713366
 gamma2: 0.6806709573240564
 ```
 
-### Gibbs Sampling
+## Gibbs Sampling
 
-For Gibbs Sampling, I have used the "linear scan" version of the approach, in which I sample each parameter conditional on "current" values of other parameters in the same order in each iteration. 
+For Gibbs Sampling, I have used the "linear scan" version of the approach, in which I sample each parameter conditional on "current" values of other parameters in the same order in each iteration. The computations of conditional distributions are presented in the appendix. There was little freedom for choice here, except for the starting values for sampling. I chose an approach similar to importance sampling, selecting initial parameter values to be close to "estimates" that I've obtained from other methods. Also, since $\mu_1$ is conditionally independent of $\mu_2$ (same for $\gamma_k$'s), it can be said that I do a "block" update of these parameters, sampling from the two conditional distributions at the same time.
 
-My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output:
+My program prints out the posterior means, together with a posterior confidence interval that ranges from $0.05$th to $0.95$th quantiles. Here is the output from $8000$ samples with $1000$ burn-in steps:
 
 ```
 Gibbs sampler results:
 s: 0.022 [0.015, 0.030]
-tau: 0.896 [0.816, 0.974]
-mu1: -1.410 [-1.505, -1.318]
-mu2: -0.644 [-0.728, -0.561]
-gamma1: -0.270 [-0.374, -0.167]
-gamma2: 0.328 [0.223, 0.432]
+tau: 0.894 [0.817, 0.973]
+mu1: -1.412 [-1.506, -1.322]
+mu2: -0.646 [-0.730, -0.565]
+gamma1: -0.269 [-0.373, -0.165]
+gamma2: 0.327 [0.222, 0.431]
 ```
 
-I also produced histograms for posterior distributions of the parameters.
+I also produced histograms for posterior distributions of the parameters, with the posterior mean shown as a red line.
 
-### Discussion
+![](gibbs_histograms.png)
+
+## Discussion
+
+Overall, judging by the histograms and the produced point estimates, all methods have a very similar performance, with several interesting exceptions. For example, the Gibbs sampler seems to underestimate the variance, while HMC overestimates it. Similaly, importance sampling overestimated the value of $\gamma_2$. The samples from the posterior are "nice" in all three Markov chain based methods: they are approximately unimodal and even approximately symmetric for $\mu_k$ and $\gamma_k$. In my opinion, the Gibbs sampler has shown the best performance: as all except one of the conditional distributions were normal, there is no question about whether posterior mean is a good characterization of the parameter estimate.
+
+As the sample size of the method increases, all methods require more computational time: at each step, all of them either recalculate the likelihood or make some other repetitive computations. Gibbs sampling was the fastest since all that was needed were the parameters for conditional distributions, requiring less mathematical operations. HMC requires the most computational time, especialy with multiple leapfrog steps per iteration. However, as the HMC approach is able to more efficiently explore the distribution, there is no need for excessive sample sizes given well-adjusted hyperparameters. 
+
+This project was written in Rust, and the source code is available at [https://github.com/EgorLappo/STATS270_project](https://github.com/EgorLappo/STATS270_project).
 
 
-
-### Appendix 
+## Appendix 
 
 The distribution that I want to sample is 
 

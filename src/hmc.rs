@@ -31,8 +31,8 @@ pub struct Chain {
 impl Chain {
     pub fn new(data: Data) -> Self {
         let parameters = Parameters {
-            L: 5,
-            dt: 0.001,
+            L: 3,
+            dt: 0.01,
             m: vec![1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
             p: vec![0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             q: vec![1.0, 0.5, 0.0, 0.0, 0.0, 0.0],

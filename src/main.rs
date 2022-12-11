@@ -16,7 +16,7 @@ fn main() -> Result<()>{
 
     let mut mh_chain = mh::Chain::new(data.clone());
 
-    let mh_samples = mh_chain.run(1000, 3000, 42);
+    let mh_samples = mh_chain.run(1000, 8000, 42);
 
     println!("MH results:");
 
@@ -30,7 +30,7 @@ fn main() -> Result<()>{
 
     let mut hmc_chain = hmc::Chain::new(data.clone());
 
-    let hmc_samples = hmc_chain.run(3000, 8000, 42);
+    let hmc_samples = hmc_chain.run(1000, 8000, 42);
 
     println!("HMC results:");
 
@@ -52,7 +52,7 @@ fn main() -> Result<()>{
 
     let mut gibbs_chain = gibbs::Chain::new(data.clone());
 
-    let gibbs_samples = gibbs_chain.run(1000, 3000, 42);
+    let gibbs_samples = gibbs_chain.run(1000, 8000, 42);
 
     println!("Gibbs sampler results:");
 
