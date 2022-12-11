@@ -11,4 +11,3 @@ csv = "1.1.6"
 rand = "0.8.5"
 serde = { version = "1.0.147", features = ["serde_derive"] }
 statrs = "0.16.0"
-truncnorm = "0.5.1"

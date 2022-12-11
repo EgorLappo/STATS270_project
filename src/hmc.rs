@@ -4,9 +4,6 @@ use rand::distributions::Distribution;
 use statrs::distribution::Normal;
 use serde::{Serialize, Deserialize};
 
-static SPROPSD: f64 = 0.1;
-static MEANPROPSD: f64 = 0.5;
-
 #[derive(Debug, Clone)]
 pub struct Parameters {
     L: usize,
@@ -161,6 +158,7 @@ fn dU(data: &Data, q: &Vec<f64>) -> Vec<f64> {
 
                 let t2 = (row.x1-q[2]*0.5-q[4]*0.5)/(2.*q[0]);
                 let t3 = (row.x2-q[3]*0.5-q[5]*0.5)/(2.*q[0]);
+
                 du[2] -= t2;
                 du[3] -= t3;
                 du[4] -= t2;
@@ -176,6 +174,7 @@ fn dU(data: &Data, q: &Vec<f64>) -> Vec<f64> {
                 
                 let t2 = (row.x1 - q[2]*q[1] - q[4]*(1.-q[1]))/q[0];
                 let t3 = (row.x2 - q[3]*q[1] - q[5]*(1.-q[1]))/q[0];
+
                 du[2] -= q[1]*t2;
                 du[3] -= q[1]*t3;
                 du[4] -= (1.-q[1])*t2;

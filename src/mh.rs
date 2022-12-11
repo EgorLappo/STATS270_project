@@ -4,7 +4,7 @@ use rand::distributions::Distribution;
 use statrs::distribution::{Uniform, Normal};
 use serde::{Serialize, Deserialize};
 
-static SPROPSD: f64 = 0.1;
+static SPROPSD: f64 = 0.2;
 static MEANPROPSD: f64 = 0.5;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

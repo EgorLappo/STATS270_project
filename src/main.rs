@@ -4,6 +4,7 @@ pub mod data;
 pub mod mh;
 pub mod hmc;
 pub mod importance;
+pub mod gibbs;
 
 fn main() -> Result<()>{
 
@@ -47,7 +48,21 @@ fn main() -> Result<()>{
 
     importance_samples.print_values();
 
-    println!("not yet running the Gibbs sampler...");
+    println!("running the Gibbs sampler...");
+
+    let mut gibbs_chain = gibbs::Chain::new(data.clone());
+
+    let gibbs_samples = gibbs_chain.run(1000, 3000, 42);
+
+    println!("Gibbs sampler results:");
+
+    println!("{}", gibbs::Parameters::summary(&gibbs_samples));
+
+    println!("saving the samples to file 'gibbs_samples.csv'...");
+
+    gibbs::Parameters::save_to_csv(&gibbs_samples, "gibbs_samples.csv");
+
+    println!("done! :)");
 
     Ok(())
 }
